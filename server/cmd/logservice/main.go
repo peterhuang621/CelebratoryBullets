@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"server/mylog"
+	"server/registry"
 	"server/service"
 
 	"github.com/gin-gonic/gin"
@@ -17,8 +18,14 @@ func main() {
 
 	mylog.Run("./distributed.log")
 	host, port := "localhost", "4000"
-	ctx, err := service.Start(context.Background(), "Log Service", host, port,
-		mylog.RegisterHandlers, r)
+	serviceAddr := fmt.Sprintf("http://%s:%s", host, port)
+
+	res := registry.Registration{
+		ServiceName: "Log Service",
+		ServiceURL:  serviceAddr,
+	}
+
+	ctx, err := service.Start(context.Background(), host, port, res, mylog.RegisterHandlers, r)
 	if err != nil {
 		log.Fatalln(err)
 	}
