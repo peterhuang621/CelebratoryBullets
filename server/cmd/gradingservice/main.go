@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"server/grades"
+	"server/mylog"
 	"server/registry"
 	"server/service"
 
@@ -17,8 +18,10 @@ func main() {
 	serviceaddr := fmt.Sprintf("http://%v:%v", host, port)
 
 	res := registry.Registration{
-		ServiceName: registry.GradingServie,
-		ServiceURL:  serviceaddr,
+		ServiceName:      registry.GradingServie,
+		ServiceURL:       serviceaddr,
+		RequiredServices: []registry.ServiceName{registry.LogService},
+		ServiceUpdateURL: serviceaddr + "/services",
 	}
 
 	ctx, err := service.Start(context.Background(),
@@ -30,6 +33,11 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	if logProvider, err := registry.GetProvider(registry.LogService); err == nil {
+		fmt.Printf("Logging service found at: %s\n", logProvider)
+		mylog.SetClientLogger(logProvider, res.ServiceName)
+	}
+
 	<-ctx.Done()
 	fmt.Println("Shutting down grading service")
 }
