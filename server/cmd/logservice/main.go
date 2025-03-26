@@ -25,6 +25,7 @@ func main() {
 		ServiceURL:       serviceAddr,
 		RequiredServices: make([]registry.ServiceName, 0),
 		ServiceUpdateURL: serviceAddr + "/services",
+		HeartBeatURL:     serviceAddr + "/heartbeat",
 	}
 
 	ctx, err := service.Start(context.Background(), host, port, res, mylog.RegisterHandlers, r)

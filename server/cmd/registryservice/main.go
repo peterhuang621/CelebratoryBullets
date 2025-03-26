@@ -13,6 +13,8 @@ import (
 func main() {
 	r := gin.Default()
 	r.Any("/services", (&registry.RegistryService{}).ServeHTTP)
+	registry.SetupRegistryService()
+
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
