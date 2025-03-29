@@ -9,7 +9,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/peterhuang621/CelebratoryBullets/bulletserver/configs"
 	"github.com/peterhuang621/CelebratoryBullets/bulletserver/internal/server"
-	_ "github.com/peterhuang621/CelebratoryBullets/bulletserver/internal/server"
 )
 
 var engine *gin.Engine
@@ -18,7 +17,7 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	engine = gin.Default()
-
+	// server.StartMQ(&ctx, &cancel)
 	server.SeverServices(engine)
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%s", configs.Server_Port),

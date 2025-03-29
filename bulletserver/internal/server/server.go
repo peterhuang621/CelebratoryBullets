@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sync"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -14,26 +15,29 @@ import (
 
 var file *os.File
 var err error
+var fileMutex *sync.Mutex
 
 func init() {
 	fileInfo, err := os.Stat(configs.GL_Drawingfile)
 	if os.IsNotExist(err) {
-		file, err = os.Create(configs.GL_Drawingfile)
+		_, err = os.Create(configs.GL_Drawingfile)
 		if err != nil {
 			log.Fatalf("Failed on creating the nonexisted file: %v", err)
 			return
 		}
-	} else {
-		file, err = os.OpenFile(configs.GL_Drawingfile, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0644)
-		if err != nil {
-			log.Fatalf("Failed on opening the existed file: %v", err)
-			return
-		}
-		if fileInfo.Size() != 0 {
-			startDrawing()
-		}
 	}
+	file, err = os.OpenFile(configs.GL_Drawingfile, os.O_APPEND|os.O_CREATE|os.O_RDWR, 0644)
+	if err != nil {
+		log.Fatalf("Failed on opening the existed file: %v", err)
+		return
+	}
+	if fileInfo.Size() != 0 {
+		startDrawing()
+	}
+	fileMutex = &sync.Mutex{}
 	log.Printf("File successfully opened!\n")
+	initMQ()
+	StartMQ()
 }
 
 func SeverServices(engine *gin.Engine) {
@@ -49,11 +53,18 @@ func SeverServices(engine *gin.Engine) {
 			pkg.WarnHandle(err)
 			return
 		}
+		SendToMQ(&bullets)
 		ctx.JSON(http.StatusOK, gin.H{
 			"msg":   "bullets successfully received!",
 			"count": len(bullets),
 		})
-		WriteToDrawingFile(&bullets)
+	})
+	engine.GET(fmt.Sprintf("/%s", configs.Server_Addr), func(ctx *gin.Context) {
+		ctx.JSON(http.StatusOK, gin.H{
+			"mqaddress": configs.MQ_Addr,
+			"rabbitmq":  mqconn != nil,
+			"queues":    configs.MQ_QueueNumber,
+		})
 	})
 	engine.NoRoute(func(ctx *gin.Context) {
 		ctx.JSON(http.StatusNotFound, nil)
@@ -86,6 +97,7 @@ func ValidateBullets(bullets *[]configs.Bullet) error {
 }
 
 func CloseDrawingFile() {
+	file.Sync()
 	if err = file.Close(); err != nil {
 		for i := 0; i < 3; i++ {
 			time.Sleep(time.Second)
@@ -101,12 +113,14 @@ func CloseDrawingFile() {
 }
 
 func WriteToDrawingFile(bullets *[]configs.Bullet) {
+	fileMutex.Lock()
+	defer fileMutex.Unlock()
 	for _, v := range *bullets {
 		fmt.Fprintf(file, "%v\n", v)
 	}
-	// file.Sync()
+	log.Printf("Wrote %d bullet(s) to the file!\n", len(*bullets))
 }
 
 func startDrawing() {
-
+	log.Println("Drawing to OpenGL...")
 }

@@ -10,6 +10,9 @@ const (
 	Position_Max       = 500
 	Server_Port        = "8866"
 	Server_Addr        = "bullets"
+	MQ_Addr            = "amqp://guest:guest@localhost:5672/"
+	GRPC_Addr          = "http://localhost:8867"
+	MQ_QueueNumber     = 5
 )
 
 type Bullet struct {

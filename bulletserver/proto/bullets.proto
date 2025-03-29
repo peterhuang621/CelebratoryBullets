@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+option go_package = "./gen";
+
+service BulletService { rpc DirectDrawBullets(BulletList) returns (Ack); }
+
+message Bullet {
+  int32 durationSecs = 1;
+  int32 size = 2;
+  repeated float color = 3;
+  repeated int32 position = 4;
+}
+
+message BulletList { repeated Bullet bullets = 1; }
+
+message Ack {
+  bool success = 1;
+  string message = 2;
+}

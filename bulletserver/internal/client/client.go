@@ -37,7 +37,7 @@ func (cl *Client) constructBullets(num int) (bullets []configs.Bullet) {
 	for i := 0; i < num; i++ {
 		bullets = append(bullets, configs.Bullet{
 			DurationSecs: cl.rng.Intn(configs.DurationSecs_Max) + 1,
-			Size:         cl.rng.Intn(configs.Size_Max + 1),
+			Size:         cl.rng.Intn(configs.Size_Max) + 1,
 			Color:        [4]float32{cl.rng.Float32(), cl.rng.Float32(), cl.rng.Float32(), cl.rng.Float32()},
 			Position:     [3]int{cl.rng.Intn(configs.Position_Max + 1), cl.rng.Intn(configs.Position_Max + 1), cl.rng.Intn(configs.Position_Max + 1)},
 		})
