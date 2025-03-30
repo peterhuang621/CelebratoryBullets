@@ -4,7 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 	"math/rand"
+	"sync"
 
 	"github.com/peterhuang621/CelebratoryBullets/bulletserver/configs"
 	"github.com/peterhuang621/CelebratoryBullets/bulletserver/pkg"
@@ -58,12 +60,12 @@ func initMQ() {
 	}
 }
 
-func StartMQ() {
-	// var wg sync.WaitGroup
+func StartMQ(ctx *context.Context) {
+	var wg sync.WaitGroup
 	for _, qn := range mqqueues {
-		// wg.Add(1)
+		wg.Add(1)
 		go func(queuename string) {
-			// defer wg.Done()
+			defer wg.Done()
 			msgs, _ := mqchannel.Consume(
 				queuename,
 				"",
@@ -73,40 +75,39 @@ func StartMQ() {
 				false,
 				nil,
 			)
-			// for {
-			// 	select {
-			// case <-(*ctx).Done():
-			// 	log.Printf("Gracefully shutdown the %s\n", queuename)
-			// 	return
-			// case msg := <-msgs:
-			var bullets []configs.Bullet
-			for msg := range msgs {
-				if err := json.Unmarshal(msg.Body, &bullets); err != nil {
-					msg.Nack(false, false)
-					continue
-				}
+			for {
+				select {
+				case <-(*ctx).Done():
+					log.Printf("Gracefully shutdown the %s\n", queuename)
+					return
+				case msg := <-msgs:
+					var bullets []configs.Bullet
 
-				WriteToDrawingFile(&bullets)
-				msg.Ack(false)
+					if err := json.Unmarshal(msg.Body, &bullets); err != nil {
+						msg.Nack(false, false)
+					} else {
+						WriteToDrawingFile(&bullets)
+						msg.Ack(false)
+					}
+				}
 			}
-			// }
-			// }
 		}(qn)
 	}
-	// <-(*ctx).Done()
-	// mqchannel.Close()
-	// mqconn.Close()
-	// wg.Wait()
-	// log.Printf("Gracefully shutdown all consumers\n")
-
+	wg.Wait()
+	mqchannel.Close()
+	mqconn.Close()
+	log.Printf("Gracefully shutdown all consumers\n")
 }
 
-func SendToMQ(bullets *[]configs.Bullet) {
+func SendToMQwithoutRoutingKey(bullets *[]configs.Bullet) {
 	body, err := json.Marshal(bullets)
 	pkg.FailOnError(err, "Failed on Marshaling bullets when sending to the mq")
 	num := rand.Intn(configs.MQ_QueueNumber)
 	routeKey := mqqueues[num]
+	SendToMQwithRoutingKey(body, routeKey)
+}
 
+func SendToMQwithRoutingKey(body []byte, routeKey string) {
 	err = mqchannel.PublishWithContext(
 		context.Background(),
 		mqex,
@@ -118,5 +119,5 @@ func SendToMQ(bullets *[]configs.Bullet) {
 			Body:        body,
 		},
 	)
-	pkg.FailOnError(err, fmt.Sprintf("Failed on sending to the mq queue #%d", num))
+	pkg.FailOnError(err, fmt.Sprintf("Failed on sending to the mq %s", routeKey))
 }

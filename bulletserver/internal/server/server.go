@@ -11,11 +11,13 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/peterhuang621/CelebratoryBullets/bulletserver/configs"
 	"github.com/peterhuang621/CelebratoryBullets/bulletserver/pkg"
+	"google.golang.org/grpc"
 )
 
 var file *os.File
 var err error
 var fileMutex *sync.Mutex
+var grpc_server *grpc.Server
 
 func init() {
 	fileInfo, err := os.Stat(configs.GL_Drawingfile)
@@ -37,7 +39,7 @@ func init() {
 	fileMutex = &sync.Mutex{}
 	log.Printf("File successfully opened!\n")
 	initMQ()
-	StartMQ()
+	go initgRPC()
 }
 
 func SeverServices(engine *gin.Engine) {
@@ -53,7 +55,7 @@ func SeverServices(engine *gin.Engine) {
 			pkg.WarnHandle(err)
 			return
 		}
-		SendToMQ(&bullets)
+		SendToMQwithoutRoutingKey(&bullets)
 		ctx.JSON(http.StatusOK, gin.H{
 			"msg":   "bullets successfully received!",
 			"count": len(bullets),
@@ -96,7 +98,7 @@ func ValidateBullets(bullets *[]configs.Bullet) error {
 	return nil
 }
 
-func CloseDrawingFile() {
+func Close() {
 	file.Sync()
 	if err = file.Close(); err != nil {
 		for i := 0; i < 3; i++ {
@@ -109,10 +111,16 @@ func CloseDrawingFile() {
 		}
 	}
 	pkg.WarnHandle(err, "Failed on closing the file, please manually check the drawing file status")
-	fmt.Println("CloseDrawingFile function ended!")
+	grpc_server.GracefulStop()
+	fmt.Println("Grpc_server gracefully stopped!")
+	fmt.Println("Close function ended!")
 }
 
 func WriteToDrawingFile(bullets *[]configs.Bullet) {
+	if len(*bullets) == 0 {
+		log.Printf("Empty bullets, no writing!\n")
+		return
+	}
 	fileMutex.Lock()
 	defer fileMutex.Unlock()
 	for _, v := range *bullets {

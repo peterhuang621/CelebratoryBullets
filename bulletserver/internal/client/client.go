@@ -12,13 +12,20 @@ import (
 
 	"github.com/peterhuang621/CelebratoryBullets/bulletserver/configs"
 	"github.com/peterhuang621/CelebratoryBullets/bulletserver/pkg"
+	"github.com/peterhuang621/CelebratoryBullets/bulletserver/proto/gen"
+	"google.golang.org/grpc"
 )
 
 const GeneratingSpeed_Max = 10
 
+type Client_gRPC_cl struct {
+	gen.BulletServiceClient
+}
+
 type Client struct {
-	Total int
-	rng   *rand.Rand
+	Total   int
+	rng     *rand.Rand
+	GRPC_cl *Client_gRPC_cl
 }
 
 func (cl *Client) Init() {
@@ -26,9 +33,10 @@ func (cl *Client) Init() {
 	cl.rng = rand.New(rand.NewSource(time.Now().UnixNano()))
 }
 
-func NewClient() *Client {
+func NewClient(conn *grpc.ClientConn) *Client {
 	cl := &Client{}
 	cl.Init()
+	cl.GRPC_cl = &Client_gRPC_cl{gen.NewBulletServiceClient(conn)}
 	return cl
 }
 

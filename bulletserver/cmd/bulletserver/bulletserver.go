@@ -17,7 +17,6 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	engine = gin.Default()
-	// server.StartMQ(&ctx, &cancel)
 	server.SeverServices(engine)
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%s", configs.Server_Port),
@@ -32,11 +31,15 @@ func main() {
 	}()
 
 	go func() {
+		server.StartMQ(&ctx)
+	}()
+
+	go func() {
 		fmt.Print("Enter any key to exit:\n")
 		var s string
 		fmt.Scanln(&s)
 		cancel()
 	}()
 	<-ctx.Done()
-	defer server.CloseDrawingFile()
+	defer server.Close()
 }
