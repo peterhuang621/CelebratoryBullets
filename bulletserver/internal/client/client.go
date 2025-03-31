@@ -60,13 +60,13 @@ func (cl *Client) SendingBullets(num int) {
 		return
 	}
 	bullets := cl.constructBullets(num)
-	serverurl := fmt.Sprintf("http://localhost:%s/%s", configs.Server_Port, configs.Server_Addr)
+	serverurl := fmt.Sprintf("http://localhost:%s/%s", configs.Server_Port, configs.Client_Addr)
 
 	sendingjsondata, err := json.Marshal(&bullets)
-	pkg.WarnHandle(err, "Failed on Marshaling bullets into json format")
+	pkg.FailOnError(err, "Failed on Marshaling bullets into json format")
 
 	resp, err := http.Post(serverurl, "application/json", bytes.NewBuffer(sendingjsondata))
-	pkg.WarnHandle(err, "Failed on Posting to the server")
+	pkg.FailOnError(err, "Failed on Posting to the server")
 	defer resp.Body.Close()
 
 	body, err := io.ReadAll(resp.Body)

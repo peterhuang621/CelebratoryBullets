@@ -66,7 +66,7 @@ func main() {
 						if x != 0 {
 							cl.SendingBullets(x)
 						} else {
-							fmt.Printf("Sending a dedicate bullet by gRPC")
+							fmt.Println("Sending a dedicate bullet by gRPC")
 							ack, err := cl.GRPC_cl.DirectDrawBullets(
 								context.Background(),
 								bulletList,

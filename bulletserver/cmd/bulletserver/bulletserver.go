@@ -17,29 +17,30 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	engine = gin.Default()
-	server.SeverServices(engine)
+
+	server.RegistryServices(engine)
+	server.StartKernelServers(&ctx)
+	defer server.Close()
+
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%s", configs.Server_Port),
 		Handler: engine,
 	}
 
 	go func() {
+		defer cancel()
 		if err := srv.ListenAndServe(); err != nil {
-			log.Fatalf("server error: %v", err)
+			log.Printf("server error: %v", err)
+			return
 		}
-		cancel()
 	}()
 
 	go func() {
-		server.StartMQ(&ctx)
-	}()
-
-	go func() {
+		defer cancel()
 		fmt.Print("Enter any key to exit:\n")
 		var s string
 		fmt.Scanln(&s)
-		cancel()
 	}()
 	<-ctx.Done()
-	defer server.Close()
+	log.Printf("CTX DONE")
 }

@@ -66,7 +66,7 @@ func StartMQ(ctx *context.Context) {
 		wg.Add(1)
 		go func(queuename string) {
 			defer wg.Done()
-			msgs, _ := mqchannel.Consume(
+			msgs, err := mqchannel.Consume(
 				queuename,
 				"",
 				false, // 手动确认
@@ -75,15 +75,17 @@ func StartMQ(ctx *context.Context) {
 				false,
 				nil,
 			)
-			for {
+			pkg.FailOnError(err, fmt.Sprintf("Failed to consume from queue %s", queuename))
+
+			for msg := range msgs {
 				select {
 				case <-(*ctx).Done():
 					log.Printf("Gracefully shutdown the %s\n", queuename)
 					return
-				case msg := <-msgs:
+				default:
 					var bullets []configs.Bullet
-
 					if err := json.Unmarshal(msg.Body, &bullets); err != nil {
+						log.Printf("Failed to Unmarshal the message at %s", queuename)
 						msg.Nack(false, false)
 					} else {
 						WriteToDrawingFile(&bullets)
@@ -93,6 +95,7 @@ func StartMQ(ctx *context.Context) {
 			}
 		}(qn)
 	}
+	log.Println("Start MQ!")
 	wg.Wait()
 	mqchannel.Close()
 	mqconn.Close()
