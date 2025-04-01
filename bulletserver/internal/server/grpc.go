@@ -42,10 +42,10 @@ func (s *BulletgRPCServiceServer) DirectDrawBullets(ctx context.Context, in *gen
 		}
 
 		bullets = append(bullets, configs.Bullet{
-			DurationSecs: int(b.DurationSecs),
-			Size:         int(b.Size),
+			DurationSecs: b.DurationSecs,
+			Size:         b.Size,
 			Color:        [4]float32{b.Color[0], b.Color[1], b.Color[2], b.Color[3]},
-			Position:     [3]int{int(b.Position[0]), int(b.Position[1]), int(b.Position[2])},
+			Position:     [3]float32{float32(b.Position[0]), float32(b.Position[1]), float32(b.Position[2])},
 		})
 	}
 	body, err := json.Marshal(bullets)

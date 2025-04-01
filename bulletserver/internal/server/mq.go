@@ -88,7 +88,7 @@ func StartMQ(ctx *context.Context) {
 						log.Printf("Failed to Unmarshal the message at %s", queuename)
 						msg.Nack(false, false)
 					} else {
-						WriteToDrawingFile(&bullets)
+						WriteToDrawingFile(&bullets, queuename)
 						msg.Ack(false)
 					}
 				}

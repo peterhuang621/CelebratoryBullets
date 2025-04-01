@@ -140,12 +140,12 @@ func RegistryServices(engine *gin.Engine) {
 
 func ValidateBullets(bullets *[]configs.Bullet) error {
 	for i, bullet := range *bullets {
-		if bullet.DurationSecs <= 0 || bullet.DurationSecs > configs.DurationSecs_Max {
-			return fmt.Errorf("invalid bullet[%d].DurationSecs (%d)", i, bullet.DurationSecs)
+		if bullet.DurationSecs <= 0.0 || bullet.DurationSecs > configs.DurationSecs_Max {
+			return fmt.Errorf("invalid bullet[%d].DurationSecs (%f)", i, bullet.DurationSecs)
 		}
 
-		if bullet.Size <= 0 || bullet.Size > configs.Size_Max {
-			return fmt.Errorf("invalid bullet[%d].Size (%d)", i, bullet.Size)
+		if bullet.Size <= 0.0 || bullet.Size > configs.Size_Max {
+			return fmt.Errorf("invalid bullet[%d].Size (%f)", i, bullet.Size)
 		}
 
 		for j, v := range bullet.Color {
@@ -156,14 +156,14 @@ func ValidateBullets(bullets *[]configs.Bullet) error {
 
 		for j, v := range bullet.Position {
 			if v > configs.Position_Max {
-				return fmt.Errorf("bullet[%d].Position[%d] (%d)", i, j, v)
+				return fmt.Errorf("bullet[%d].Position[%d] (%f)", i, j, v)
 			}
 		}
 	}
 	return nil
 }
 
-func WriteToDrawingFile(bullets *[]configs.Bullet) {
+func WriteToDrawingFile(bullets *[]configs.Bullet, queuename string) {
 	if len(*bullets) == 0 {
 		log.Printf("Empty bullets, no writing!\n")
 		return
@@ -177,9 +177,8 @@ func WriteToDrawingFile(bullets *[]configs.Bullet) {
 	log.Printf("Successfully DecrBy in Redis server\n")
 
 	fileMutex.Lock()
-	time.Sleep(time.Second * 2)
 	for _, v := range *bullets {
-		fmt.Fprintf(file, "%v\n", v)
+		fmt.Fprintf(file, "%s %s\n", v.String(), queuename)
 	}
 	fileMutex.Unlock()
 

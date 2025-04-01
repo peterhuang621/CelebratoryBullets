@@ -35,10 +35,10 @@ func main() {
 	bulletList := &gen.BulletList{
 		Bullets: []*gen.Bullet{
 			{
-				DurationSecs: 10,
-				Size:         5,
+				DurationSecs: 10.0,
+				Size:         5.0,
 				Color:        []float32{1.0, 0.0, 0.0, 1.0},
-				Position:     []int32{10, 20, 30},
+				Position:     []float32{10, 20, 30},
 			},
 		},
 	}
