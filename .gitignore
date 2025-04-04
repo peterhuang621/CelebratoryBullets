@@ -23,3 +23,25 @@ go.work.sum
 
 # env file
 .env
+
+#CMakeFiles
+
+.DS_Store
+*.dSYM/
+CMakeCache.txt
+CMakeFiles/
+Makefile
+cmake_install.cmake
+
+CMakeLists.txt.user
+CMakeCache.txt
+CMakeFiles
+CMakeScripts
+Testing
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+CTestTestfile.cmake
+_deps
+CMakeUserPresets.json
