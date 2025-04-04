@@ -4,6 +4,7 @@ import "fmt"
 
 const (
 	GL_Drawingfile        = "GL_DRAWING.txt"
+	GL_Bufferfile         = "GL_BUFFER.txt"
 	DrawingSpeed_Max      = 50
 	DrawingSpeed_Heavy    = 30
 	DrawingSpeed_Light    = 20

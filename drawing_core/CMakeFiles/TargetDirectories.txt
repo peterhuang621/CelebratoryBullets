@@ -1,0 +1,6 @@
+/Users/peterhuang98/test_code/Go/CelebratoryBullets/drawing_core/CMakeFiles/LIBS.dir
+/Users/peterhuang98/test_code/Go/CelebratoryBullets/drawing_core/CMakeFiles/edit_cache.dir
+/Users/peterhuang98/test_code/Go/CelebratoryBullets/drawing_core/CMakeFiles/rebuild_cache.dir
+/Users/peterhuang98/test_code/Go/CelebratoryBullets/drawing_core/src/CMakeFiles/fireworkbullet.dir
+/Users/peterhuang98/test_code/Go/CelebratoryBullets/drawing_core/src/CMakeFiles/edit_cache.dir
+/Users/peterhuang98/test_code/Go/CelebratoryBullets/drawing_core/src/CMakeFiles/rebuild_cache.dir

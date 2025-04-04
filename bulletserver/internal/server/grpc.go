@@ -45,7 +45,7 @@ func (s *BulletgRPCServiceServer) DirectDrawBullets(ctx context.Context, in *gen
 			DurationSecs: b.DurationSecs,
 			Size:         b.Size,
 			Color:        [4]float32{b.Color[0], b.Color[1], b.Color[2], b.Color[3]},
-			Position:     [3]float32{float32(b.Position[0]), float32(b.Position[1]), float32(b.Position[2])},
+			Position:     [3]float32{b.Position[0], b.Position[1], b.Position[2]},
 		})
 	}
 	body, err := json.Marshal(bullets)
