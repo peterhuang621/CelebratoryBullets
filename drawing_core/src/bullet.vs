@@ -1,32 +1,34 @@
 // #version 330 core
-// layout(location = 0) in vec3 aPos;
-// layout(location = 1) in vec3 aNormal;
+// layout (location = 0) in vec3 aPos;
+// layout (location = 1) in vec3 aColor;
 
-// out vec3 vNormal;
-// out vec3 vPos;
-// uniform mat4 projection,view,model;
+// out VS_OUT {
+//     vec3 color;
+// } vs_out;
 
-// void main(){
-//     vec4 worldPos=model*vec4(aPos,1.0);
-//     vPos = worldPos.xyz;
-//     vNormal=mat3(transpose(inverse(model)))*aNormal;
+// uniform float dis;
+
+// void main()
+// {
+//     vs_out.color = aColor;
+//     vec3 pos=aPos + dis*aColor;
+//     pos+=vec3(0.0,-0.05,0.0)*abs(dis)*10;
+//     gl_Position=vec4(pos.x,pos.y,pos.z,1.0);
+//     // gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0); 
 // }
 
 #version 330 core
-layout (location = 0) in vec3 aPos;
-layout (location = 1) in vec3 aColor;
+layout(location = 0) in vec3 aPos;
+layout(location = 1) in vec3 aNormal;
 
-out VS_OUT {
-    vec3 color;
-} vs_out;
+out vec3 vNormal;
+out vec3 vPos;
+uniform mat4 projection,view,model;
+uniform float start,end,time;
 
-uniform float dis;
-
-void main()
-{
-    vs_out.color = aColor;
-    vec3 pos=aPos + dis*aColor;
-    pos+=vec3(0.0,-0.05,0.0)*abs(dis)*10;
-    gl_Position=vec4(pos.x,pos.y,pos.z,1.0);
-    // gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0); 
+void main(){
+    if(time<start||time>end)return;
+    vec4 worldPos=model*vec4(aPos,1.0);
+    vPos = worldPos.xyz;
+    vNormal=mat3(transpose(inverse(model)))*aNormal;
 }

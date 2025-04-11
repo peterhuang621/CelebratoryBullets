@@ -27,14 +27,6 @@ bool firstMouse = true;
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
-struct Character
-{
-    unsigned int TextureID; // ID handle of the glyph texture
-    glm::ivec2 Size;        // Size of glyph
-    glm::ivec2 Bearing;     // Offset from baseline to left/top of glyph
-    unsigned int Advance;   // Horizontal offset to advance to next glyph
-};
-
 struct Bullet
 {
     float DurationSecs, Size;
@@ -56,7 +48,6 @@ struct Bullet
     }
 };
 
-map<GLchar, Character> Characters;
 unsigned int VAO, VBO;
 
 void processInput(GLFWwindow *window)
@@ -177,15 +168,17 @@ unsigned int loadTexture(char const *path, bool gammaCorrection = true)
     return textureID;
 }
 
-const string drawing_file = "../../bulletserver/cmd/bulletserver/GL_DRAWING.txt";
-const string buffer_file = "../../bulletserver/cmd/bulletserver/GL_BUFFER.txt";
+const string drawing_file =
+    "/Users/peterhuang98/test_code/Go/CelebratoryBullets/bulletserver/cmd/bulletserver/GL_DRAWING.txt";
+const string buffer_file =
+    "/Users/peterhuang98/test_code/Go/CelebratoryBullets/bulletserver/cmd/bulletserver/GL_BUFFER.txt";
 constexpr int MAX_LINE = 30;
 static int readlinecount = 0;
 
 vector<shared_ptr<Bullet>> buffer_drawing_file_and_read()
 {
     vector<shared_ptr<Bullet>> v;
-    ifstream df(drawing_file, ios::in);
+    fstream df(drawing_file, ios::in);
     fstream bf(buffer_file, ios::in | ios::out | ios::trunc);
     if (!df)
     {
@@ -205,11 +198,12 @@ vector<shared_ptr<Bullet>> buffer_drawing_file_and_read()
     int thistimeread = 0;
     while (thistimeread < MAX_LINE && getline(df, line))
     {
-        bf << line;
+        bf << line << '\n';
         thistimeread++;
     }
 
     readlinecount += thistimeread;
+    bf.seekg(0);
 
     Bullet tmp;
     for (int i = 0; i < thistimeread; i++)

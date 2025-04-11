@@ -45,7 +45,10 @@ int main()
         glm::perspective(glm::radians(45.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 1000.0f);
     glm::mat4 view = camera.GetViewMatrix();
     glm::mat4 model = glm::mat4(1.0f);
-    float currentFrame, dis;
+    float currentFrame, start, end = 0.0;
+    int idx = 0;
+
+    auto bullets = buffer_drawing_file_and_read();
 
     while (!glfwWindowShouldClose(window))
     {
@@ -61,10 +64,27 @@ int main()
         bulletshader.setMat4("projection", projection);
         view = camera.GetViewMatrix();
         bulletshader.setMat4("view", view);
-        dis = sinf(currentFrame);
-        bulletshader.setFloat("dis", dis);
-        bulletshader.setMat4("model", model);
         glBindVertexArray(vao);
+
+        if (currentFrame > end && idx < bullets.size())
+        {
+            auto bl = bullets[idx];
+            start = currentFrame + 1;
+            end = start + bl->DurationSecs;
+            bulletshader.setFloat("start", start);
+            bulletshader.setFloat("end", end);
+
+            cout << "bullet has " << bl->DurationSecs << " secs from " << start << " to " << end << endl;
+            idx++;
+        }
+
+        model = glm::mat4(1.0f);
+        model = glm::scale(model, glm::vec3(bullets[idx]->Size / (50.0 / 2)));
+        model = glm::translate(model, glm::vec3(bullets[idx]->Position[0] / 500.0, bullets[idx]->Position[1] / 500.0,
+                                                bullets[idx]->Position[2] / 500.0));
+        bulletshader.setMat4("model", model);
+        currentFrame = static_cast<float>(glfwGetTime());
+        bulletshader.setFloat("time", currentFrame);
         glDrawArrays(GL_POINTS, 0, stacks * slices);
 
         glfwSwapBuffers(window);
